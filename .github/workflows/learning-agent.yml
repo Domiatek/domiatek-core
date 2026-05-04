@@ -1,0 +1,54 @@
+name: Learning Agent — Record Patterns
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    if: contains(join(github.event.issue.labels.*.name, ','), 'agent-event')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PROJECT_PAT || github.token }}
+
+      - name: Record completion pattern
+        run: |
+          mkdir -p learning
+          ISSUE_NUM="${{ github.event.issue.number }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+
+          python3 - << 'PYEOF'
+          import json, datetime, os
+
+          pf = 'learning/patterns.json'
+          if os.path.exists(pf):
+              with open(pf) as f:
+                  data = json.load(f)
+          else:
+              data = {'patterns': [], 'updated_at': ''}
+
+          data['patterns'].append({
+              'issue': os.environ.get('ISSUE_NUM', '?'),
+              'title': os.environ.get('ISSUE_TITLE', '?'),
+              'closed_at': datetime.datetime.utcnow().isoformat() + 'Z',
+              'type': 'agent-task-completed'
+          })
+          data['updated_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
+
+          with open(pf, 'w') as f:
+              json.dump(data, f, indent=2)
+          print(f"Recorded pattern #{os.environ.get('ISSUE_NUM')}")
+          PYEOF
+
+          git config user.name "Learning Agent"
+          git config user.email "learning@domiatek.com"
+          git add learning/patterns.json
+          git diff --staged --quiet || (git commit -m "chore(learning): record issue #$ISSUE_NUM" && git push)
+        env:
+          ISSUE_NUM: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
