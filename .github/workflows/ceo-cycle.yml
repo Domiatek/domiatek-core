@@ -20,16 +20,19 @@ jobs:
   ceo-cycle:
     runs-on: ubuntu-latest
     name: CEO Agent — ${{ github.event.inputs.cycle_type || 'scheduled-weekly' }}
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PROJECT_PAT || github.token }}
 
       - name: Collect org state
         env:
           GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
         run: |
-          echo "# Org State — $(date -u +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
-          echo "| Repo | Open Issues | Open PRs |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|-------------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "# Domiatek Org State — $(date -u +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "| Repo | Issues | PRs |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|-----|" >> $GITHUB_STEP_SUMMARY
           total=0
           for repo in RalloApp erp-domiatek proges-app app-energia web-domiatek; do
             open=$(gh issue list --repo Domiatek/$repo --state open --json number --jq 'length' 2>/dev/null || echo 0)
@@ -37,31 +40,56 @@ jobs:
             echo "| $repo | $open | $prs |" >> $GITHUB_STEP_SUMMARY
             total=$((total + open))
           done
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Total open issues:** $total" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check project-analysis issues
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
+        run: |
+          PENDING=$(gh issue list --repo Domiatek/domiatek-core \
+            --label project-analysis --state open --json number --jq 'length' 2>/dev/null || echo 0)
+          if [ "$PENDING" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## Nuevos proyectos para análisis ($PENDING pendientes)" >> $GITHUB_STEP_SUMMARY
+            gh issue list --repo Domiatek/domiatek-core \
+              --label project-analysis --state open \
+              --json number,title --jq '.[] | "- #\(.number): \(.title)"' >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Update roadmap metrics
         env:
           GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
         run: |
-          python3 - << 'EOF'
-          import json, subprocess, datetime
+          python3 - << 'PYEOF'
+          import json, subprocess, datetime, os
+
           with open('roadmap.json') as f:
               roadmap = json.load(f)
+
           roadmap['updated_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
           roadmap['updated_by'] = 'ceo-agent-gh-actions'
+
           total = 0
+          env = dict(os.environ)
           for repo in ['RalloApp','erp-domiatek','proges-app','app-energia','web-domiatek']:
-              r = subprocess.run(['gh','issue','list','--repo',f'Domiatek/{repo}','--state','open','--json','number','--jq','length'], capture_output=True, text=True)
-              total += int(r.stdout.strip() or '0')
+              r = subprocess.run(
+                  ['gh','issue','list','--repo',f'Domiatek/{repo}',
+                   '--state','open','--json','number','--jq','length'],
+                  capture_output=True, text=True, env=env
+              )
+              count = int(r.stdout.strip() or '0')
+              total += count
+              print(f"{repo}: {count} issues")
+
           roadmap['meta']['total_open_issues'] = total
           roadmap['meta']['last_analysis'] = datetime.datetime.utcnow().isoformat() + 'Z'
+
           with open('roadmap.json','w') as f:
               json.dump(roadmap, f, indent=2, ensure_ascii=False)
-          print(f"Updated: {total} open issues")
-          EOF
+          print(f"Total: {total} open issues")
+          PYEOF
 
-      - name: Select and dispatch next task
+      - name: Select next task and dispatch
         if: >
           github.event.inputs.cycle_type == 'task-selection' ||
           github.event.inputs.cycle_type == 'full-cycle'
@@ -81,18 +109,19 @@ jobs:
             AGENT=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['agent_type'])")
             ITEM_ID=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['id'])")
             TITLE=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['title'])")
-            echo "## Dispatch: $ITEM_ID → $AGENT" >> $GITHUB_STEP_SUMMARY
-            echo "Repo: $REPO | Issue: #$ISSUE" >> $GITHUB_STEP_SUMMARY
             gh issue create \
               --repo Domiatek/domiatek-core \
               --title "[ceo-dispatch] $AGENT → $REPO#$ISSUE ($ITEM_ID)" \
               --label "agent-event,dispatch" \
               --body "## CEO Agent Dispatch
+
           **Task ID:** $ITEM_ID
-          **Target:** $REPO#$ISSUE
-          **Agent:** $AGENT
+          **Target repo:** $REPO
+          **Issue:** #$ISSUE
+          **Agent type:** $AGENT
           **Title:** $TITLE
-          **Dispatched:** $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          **Dispatched at:** $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "Dispatched: $ITEM_ID → $AGENT@$REPO#$ISSUE" >> $GITHUB_STEP_SUMMARY
           else
             echo "No queued items" >> $GITHUB_STEP_SUMMARY
           fi
@@ -102,5 +131,4 @@ jobs:
           git config user.name "CEO Agent"
           git config user.email "ceo-agent@domiatek.com"
           git add roadmap.json
-          git diff --staged --quiet || git commit -m "chore(roadmap): update metrics $(date -u +%Y-%m-%d)"
-          git push
+          git diff --staged --quiet || (git commit -m "chore(roadmap): update metrics $(date -u +%Y-%m-%d)" && git push)
