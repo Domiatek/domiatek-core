@@ -1,0 +1,36 @@
+name: Project Analysis — CEO Template
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+
+jobs:
+  add-template:
+    if: github.event.label.name == 'project-analysis'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add CEO analysis template
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --body "## CEO Agent — Análisis pendiente
+
+          **Recibido:** $(date -u +%Y-%m-%d)
+          **Ciclo de análisis:** próximo lunes 08:00 UTC
+
+          ### Checklist para CEO Agent
+          - [ ] Problema que resuelve
+          - [ ] Alineación con misión Domiatek
+          - [ ] Stack tecnológico recomendado
+          - [ ] Estimación de esfuerzo (sprints)
+          - [ ] Dependencias con proyectos activos
+          - [ ] Prioridad vs roadmap actual (score 1-100)
+          - [ ] Decisión: añadir al roadmap / posponer / descartar
+
+          ---
+          *Añade contexto comentando en este issue antes del lunes. El CEO Agent leerá todos los comentarios.*"
