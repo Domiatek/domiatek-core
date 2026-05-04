@@ -24,57 +24,64 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python3 - << 'PYEOF'
-          import json, subprocess, datetime, os, urllib.request, urllib.parse
+          python3 << 'PYEOF'
+import json, datetime, os, urllib.request, urllib.parse
 
-          with open('roadmap.json') as f:
-              roadmap = json.load(f)
+with open('roadmap.json') as f:
+    roadmap = json.load(f)
 
-          queued = [i for i in roadmap['items'] if i['status'] == 'queued']
-          in_progress = [i for i in roadmap['items'] if i['status'] == 'in_progress']
+queued = [i for i in roadmap['items'] if i['status'] == 'queued']
+in_progress = [i for i in roadmap['items'] if i['status'] == 'in_progress']
 
-          def esc(s):
-              for c in r'_*[]()~`>#+-=|{}.!':
-                  s = s.replace(c, '\' + c)
-              return s
+lines = ["Domiatek Agent -- Buenos dias Dario!\n"]
 
-          lines = ["*Buenos días Darío\!* 🤖 Plan del día:\n"]
+if in_progress:
+    lines.append("En progreso:")
+    for item in in_progress:
+        lines.append(f"  * [{item['id']}] {item['title']}")
+    lines.append("")
 
-          if in_progress:
-              lines.append("🔄 *En progreso:*")
-              for item in in_progress:
-                  lines.append(f"  • {esc(item['id'])}: {esc(item['title'])}")
-              lines.append("")
+if queued:
+    lines.append("Selecciona proyecto para hoy:")
+    lines.append("  0. Nuevo proyecto")
+    for i, item in enumerate(queued[:5], 1):
+        repo = item['repo'].split('/')[-1]
+        score = item.get('priority_score', '?')
+        lines.append(f"  {i}. [{item['id']}] {item['title']} ({repo}, score:{score})")
+    lines.append("")
+    lines.append("Comenta tu eleccion en el daily issue antes de las 07:00 AM.")
+    lines.append("Sin respuesta: trabajare en el proyecto #1 automaticamente.")
+    queued[0]['status'] = 'scheduled'
+    with open('roadmap.json', 'w') as f:
+        json.dump(roadmap, f, indent=2, ensure_ascii=False)
+else:
+    lines.append("Sin tareas en cola. Roadmap al dia!")
 
-          if queued:
-              lines.append("📋 *Selecciona proyecto para hoy:*")
-              lines.append("  0\. Nuevo proyecto")
-              for i, item in enumerate(queued[:5], 1):
-                  repo = item['repo'].split('/')[-1]
-                  lines.append(f"  {i}\. \[{esc(item['id'])}\] {esc(item['title'])} \({esc(repo)}\)")
-              lines.append("")
-              lines.append("⏰ Comenta en el issue antes de las 07:00 AM")
-              lines.append("Sin respuesta → prioridad \#1 automático")
-              queued[0]['status'] = 'scheduled'
-              with open('roadmap.json', 'w') as f:
-                  json.dump(roadmap, f, indent=2, ensure_ascii=False)
-          else:
-              lines.append("✅ Sin tareas en cola\. Roadmap al día\!")
+message = "\n".join(lines)
 
-          message = "\n".join(lines)
+bot = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+chat = os.environ.get('TELEGRAM_CHAT_ID', '')
 
-          bot = os.environ.get('TELEGRAM_BOT_TOKEN', '')
-          chat = os.environ.get('TELEGRAM_CHAT_ID', '')
-          if bot and chat:
-              data = urllib.parse.urlencode({'chat_id': chat, 'text': message, 'parse_mode': 'MarkdownV2'}).encode()
-              try:
-                  urllib.request.urlopen(urllib.request.Request(f'https://api.telegram.org/bot{bot}/sendMessage', data=data))
-                  print("Telegram sent")
-              except Exception as e:
-                  print(f"Telegram error: {e}")
-          else:
-              print("Telegram secrets not set — skipping notification")
-          PYEOF
+if bot and chat:
+    data = urllib.parse.urlencode({'chat_id': chat, 'text': message}).encode()
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{bot}/sendMessage',
+        data=data
+    )
+    try:
+        with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read())
+            if result.get('ok'):
+                print("Telegram sent OK")
+            else:
+                print(f"Telegram error: {result}")
+    except Exception as e:
+        print(f"Telegram error: {e}")
+else:
+    print("Telegram secrets not set -- skipping")
+
+print(f"Scheduled default: {queued[0]['id'] if queued else 'none'}")
+PYEOF
 
       - name: Create daily issue
         env:
@@ -85,25 +92,25 @@ jobs:
             --label daily-plan --state open --json number --jq '.[0].number' 2>/dev/null)
           if [ -z "$EXISTING" ]; then
             ITEMS=$(python3 -c "
-          import json
-          with open('roadmap.json') as f:
-              r = json.load(f)
-          items = [i for i in r['items'] if i['status'] in ('queued','scheduled','in_progress')]
-          print('- [ ] 0. Nuevo proyecto')
-          for i, item in enumerate(items[:5], 1):
-              print(f\"- [ ] {i}. [{item['id']}] {item['title']} ({item['repo']})\")
-          ")
+import json
+with open('roadmap.json') as f:
+    r = json.load(f)
+items = [i for i in r['items'] if i['status'] in ('queued','scheduled','in_progress')]
+print('- [ ] 0. Nuevo proyecto')
+for i, item in enumerate(items[:5], 1):
+    print(f\"- [ ] {i}. [{item['id']}] {item['title']} ({item['repo']})\")
+")
             gh issue create \
               --repo Domiatek/domiatek-core \
               --title "[daily] $TODAY" \
               --label "daily-plan" \
-              --body "## Plan del día — $TODAY
+              --body "## Plan del dia -- $TODAY
 
-          Comenta tu elección antes de las **07:00 AM**. Sin respuesta, el agente trabaja en la tarea de mayor prioridad.
+Comenta tu eleccion antes de las **07:00 AM**. Sin respuesta, el agente trabaja en la tarea de mayor prioridad.
 
-          $ITEMS
+$ITEMS
 
-          > Para nuevo proyecto: comenta \`0: descripción del proyecto\`"
+> Para nuevo proyecto: comenta \`0: descripcion del proyecto\`"
           fi
 
       - name: Commit roadmap
