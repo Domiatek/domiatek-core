@@ -2,7 +2,7 @@
   "version": "1.0",
   "schema": "domiatek-roadmap-v1",
   "updated_by": "ceo-agent-gh-actions",
-  "updated_at": "2026-05-04T06:10:29.466188Z",
+  "updated_at": "2026-05-04T13:14:02.168595Z",
   "current_sprint": {
     "id": 1,
     "start": "2026-05-05",
@@ -167,6 +167,6 @@
       "app-energia",
       "web-domiatek"
     ],
-    "last_analysis": "2026-05-04T06:10:30.578798Z"
+    "last_analysis": "2026-05-04T13:14:03.429771Z"
   }
 }
