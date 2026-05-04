@@ -22,12 +22,10 @@ jobs:
     name: CEO Agent — ${{ github.event.inputs.cycle_type || 'scheduled-weekly' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PROJECT_PAT }}
 
       - name: Collect org state
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+          GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
         run: |
           echo "# Org State — $(date -u +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
           echo "| Repo | Open Issues | Open PRs |" >> $GITHUB_STEP_SUMMARY
@@ -44,7 +42,7 @@ jobs:
 
       - name: Update roadmap metrics
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+          GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
         run: |
           python3 - << 'EOF'
           import json, subprocess, datetime
@@ -68,7 +66,7 @@ jobs:
           github.event.inputs.cycle_type == 'task-selection' ||
           github.event.inputs.cycle_type == 'full-cycle'
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+          GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
         run: |
           NEXT=$(python3 -c "
           import json
@@ -95,6 +93,8 @@ jobs:
           **Agent:** $AGENT
           **Title:** $TITLE
           **Dispatched:** $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          else
+            echo "No queued items" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Commit roadmap update
