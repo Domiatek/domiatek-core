@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "schema": "domiatek-roadmap-v1",
+  "updated_by": "ceo-agent",
+  "updated_at": "2026-05-04T00:00:00Z",
+  "current_sprint": {
+    "id": 1,
+    "start": "2026-05-05",
+    "end": "2026-05-18",
+    "goal": "Scaffolds funcionales en proges-app y web-domiatek + autenticación base en RalloApp + Cloudflare Tunnel para ERP"
+  },
+  "sprints_completed": 0,
+  "items": [
+    {
+      "id": "PA-001", "project": "proges-app", "repo": "Domiatek/proges-app", "issue": 2,
+      "title": "Flutter scaffold con arquitectura feature-first y CI/CD para APK",
+      "epic": "Scaffold e infraestructura", "agent_type": "mobile-dev",
+      "score": 92, "priority": 1, "status": "queued", "assigned_agent": null,
+      "rationale": "Blocking: nada puede implementarse sin el scaffold base"
+    },
+    {
+      "id": "WD-001", "project": "web-domiatek", "repo": "Domiatek/web-domiatek", "issue": 1,
+      "title": "Scaffold y decisiones de stack para web corporativa",
+      "epic": "Scaffold e infraestructura", "agent_type": "frontend-dev",
+      "score": 88, "priority": 2, "status": "queued", "assigned_agent": null,
+      "rationale": "Blocking: define el stack antes de cualquier feature de web"
+    },
+    {
+      "id": "RA-001", "project": "RalloApp", "repo": "Domiatek/RalloApp", "issue": 5,
+      "title": "Implementar autenticación con Firebase Auth",
+      "epic": "Autenticación y onboarding", "agent_type": "mobile-dev",
+      "score": 84, "priority": 3, "status": "queued", "assigned_agent": null,
+      "rationale": "Core blocking: todas las features requieren usuario autenticado"
+    },
+    {
+      "id": "ERP-001", "project": "erp-domiatek", "repo": "Domiatek/erp-domiatek", "issue": 3,
+      "title": "Configurar Cloudflare Tunnel para acceso remoto seguro",
+      "epic": "Infraestructura y acceso", "agent_type": "devops",
+      "score": 78, "priority": 4, "status": "queued", "assigned_agent": null,
+      "rationale": "Infra: permite acceso remoto al ERP local"
+    },
+    {
+      "id": "PA-002", "project": "proges-app", "repo": "Domiatek/proges-app", "issue": 3,
+      "title": "Módulo de clientes — CRUD completo con ficha e historial",
+      "epic": "Módulo Clientes", "agent_type": "mobile-dev",
+      "score": 76, "priority": 5, "status": "backlog", "assigned_agent": null,
+      "rationale": "Depende de PA-001. Primera feature funcional de proges-app"
+    },
+    {
+      "id": "WD-002", "project": "web-domiatek", "repo": "Domiatek/web-domiatek", "issue": 2,
+      "title": "Landing page con secciones de servicios y CTA de contacto",
+      "epic": "Web corporativa", "agent_type": "frontend-dev",
+      "score": 74, "priority": 6, "status": "backlog", "assigned_agent": null,
+      "rationale": "Depende de WD-001. Visibilidad pública de Domiatek"
+    },
+    {
+      "id": "RA-002", "project": "RalloApp", "repo": "Domiatek/RalloApp", "issue": 20,
+      "title": "Módulo Agenda IA — citas inteligentes entre profesionales",
+      "epic": "Core product differentiator", "agent_type": "mobile-dev",
+      "score": 90, "priority": 7, "status": "backlog", "assigned_agent": null,
+      "rationale": "Alta prioridad de negocio pero depende de RA-001 (auth)"
+    },
+    {
+      "id": "ERP-002", "project": "erp-domiatek", "repo": "Domiatek/erp-domiatek", "issue": 1,
+      "title": "Módulo de facturación con numeración automática y exportación PDF",
+      "epic": "Facturación", "agent_type": "backend-dev",
+      "score": 82, "priority": 8, "status": "backlog", "assigned_agent": null,
+      "rationale": "Core del ERP. Alta complejidad, sprint 2"
+    },
+    {
+      "id": "AE-001", "project": "app-energia", "repo": "Domiatek/app-energia", "issue": 2,
+      "title": "Importación automática de datos desde PDF de factura de luz",
+      "epic": "OCR y automatización", "agent_type": "backend-dev",
+      "score": 80, "priority": 9, "status": "backlog", "assigned_agent": null,
+      "rationale": "Feature estrella de app-energia. Sprint 2"
+    },
+    {
+      "id": "ERP-003", "project": "erp-domiatek", "repo": "Domiatek/erp-domiatek", "issue": 5,
+      "title": "Dashboard con KPIs de negocio, gráficos y alertas operativas",
+      "epic": "Business Intelligence", "agent_type": "frontend-dev",
+      "score": 77, "priority": 10, "status": "backlog", "assigned_agent": null,
+      "rationale": "Valor operativo alto. Depende de datos de facturación"
+    }
+  ],
+  "weights": {
+    "valor_negocio": 0.4,
+    "urgencia": 0.3,
+    "confianza_tecnica": 0.2,
+    "deuda_tecnica": 0.1
+  },
+  "meta": {
+    "total_open_issues": 28,
+    "repos": ["RalloApp", "erp-domiatek", "proges-app", "app-energia", "web-domiatek"],
+    "last_analysis": "2026-05-04T00:00:00Z"
+  }
+}

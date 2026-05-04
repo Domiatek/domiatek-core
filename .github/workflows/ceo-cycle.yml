@@ -1,0 +1,106 @@
+name: CEO Agent — Sprint Cycle
+
+on:
+  workflow_dispatch:
+    inputs:
+      cycle_type:
+        description: 'Tipo de ciclo'
+        required: true
+        default: 'sprint-review'
+        type: choice
+        options: [sprint-review, task-selection, roadmap-update, full-cycle]
+  schedule:
+    - cron: '0 8 * * 1'
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  ceo-cycle:
+    runs-on: ubuntu-latest
+    name: CEO Agent — ${{ github.event.inputs.cycle_type || 'scheduled-weekly' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+
+      - name: Collect org state
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+        run: |
+          echo "# Org State — $(date -u +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "| Repo | Open Issues | Open PRs |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------------|----------|" >> $GITHUB_STEP_SUMMARY
+          total=0
+          for repo in RalloApp erp-domiatek proges-app app-energia web-domiatek; do
+            open=$(gh issue list --repo Domiatek/$repo --state open --json number --jq 'length' 2>/dev/null || echo 0)
+            prs=$(gh pr list --repo Domiatek/$repo --state open --json number --jq 'length' 2>/dev/null || echo 0)
+            echo "| $repo | $open | $prs |" >> $GITHUB_STEP_SUMMARY
+            total=$((total + open))
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total open issues:** $total" >> $GITHUB_STEP_SUMMARY
+
+      - name: Update roadmap metrics
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+        run: |
+          python3 - << 'EOF'
+          import json, subprocess, datetime
+          with open('roadmap.json') as f:
+              roadmap = json.load(f)
+          roadmap['updated_at'] = datetime.datetime.utcnow().isoformat() + 'Z'
+          roadmap['updated_by'] = 'ceo-agent-gh-actions'
+          total = 0
+          for repo in ['RalloApp','erp-domiatek','proges-app','app-energia','web-domiatek']:
+              r = subprocess.run(['gh','issue','list','--repo',f'Domiatek/{repo}','--state','open','--json','number','--jq','length'], capture_output=True, text=True)
+              total += int(r.stdout.strip() or '0')
+          roadmap['meta']['total_open_issues'] = total
+          roadmap['meta']['last_analysis'] = datetime.datetime.utcnow().isoformat() + 'Z'
+          with open('roadmap.json','w') as f:
+              json.dump(roadmap, f, indent=2, ensure_ascii=False)
+          print(f"Updated: {total} open issues")
+          EOF
+
+      - name: Select and dispatch next task
+        if: >
+          github.event.inputs.cycle_type == 'task-selection' ||
+          github.event.inputs.cycle_type == 'full-cycle'
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+        run: |
+          NEXT=$(python3 -c "
+          import json
+          with open('roadmap.json') as f:
+              r = json.load(f)
+          queued = [i for i in r['items'] if i['status'] == 'queued']
+          print(json.dumps(queued[0]) if queued else '')
+          ")
+          if [ -n "$NEXT" ]; then
+            ISSUE=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['issue'])")
+            REPO=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['repo'])")
+            AGENT=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['agent_type'])")
+            ITEM_ID=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['id'])")
+            TITLE=$(echo "$NEXT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['title'])")
+            echo "## Dispatch: $ITEM_ID → $AGENT" >> $GITHUB_STEP_SUMMARY
+            echo "Repo: $REPO | Issue: #$ISSUE" >> $GITHUB_STEP_SUMMARY
+            gh issue create \
+              --repo Domiatek/domiatek-core \
+              --title "[ceo-dispatch] $AGENT → $REPO#$ISSUE ($ITEM_ID)" \
+              --label "agent-event,dispatch" \
+              --body "## CEO Agent Dispatch
+          **Task ID:** $ITEM_ID
+          **Target:** $REPO#$ISSUE
+          **Agent:** $AGENT
+          **Title:** $TITLE
+          **Dispatched:** $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          fi
+
+      - name: Commit roadmap update
+        run: |
+          git config user.name "CEO Agent"
+          git config user.email "ceo-agent@domiatek.com"
+          git add roadmap.json
+          git diff --staged --quiet || git commit -m "chore(roadmap): update metrics $(date -u +%Y-%m-%d)"
+          git push

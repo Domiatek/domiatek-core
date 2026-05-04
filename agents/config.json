@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "agents": {
+    "ceo-agent": { "type": "general-purpose", "never_writes_code": true, "reads": ["roadmap.json","sprints/*","claude-mem:decisions","ruflo:operational/*"], "writes": ["roadmap.json","sprints/*"] },
+    "product-strategist": { "type": "Product Manager", "reads": ["github:issues","github:prs","github:readme","claude-mem:decisions"], "writes": ["roadmap.json:items"] },
+    "roadmap-generator": { "type": "Sprint Prioritizer", "reads": ["product-strategist:output","claude-mem:velocities"], "writes": ["roadmap.json","ruflo:sprint_state"] },
+    "task-decomposer": { "type": "Sprint Prioritizer", "reads": ["roadmap.json"], "writes": ["github:issues"] },
+    "mobile-dev": { "type": "Flutter Specialist — Domiatek", "repos": ["RalloApp","proges-app"], "stack": ["Flutter/Dart","BLoC","Firebase","go_router","SQLite"], "reads": ["github:issue","claude-mem:patterns:flutter"], "writes": ["github:branch","github:commits","github:pr"] },
+    "backend-dev": { "type": "Backend Architect", "repos": ["erp-domiatek","app-energia"], "stack": ["Node.js","Express","SQLite","REST"], "reads": ["github:issue","claude-mem:patterns:nodejs"], "writes": ["github:branch","github:commits","github:pr"] },
+    "frontend-dev": { "type": "Frontend Developer", "repos": ["web-domiatek","erp-domiatek"], "stack": ["React","Next.js","TailwindCSS"], "reads": ["github:issue","claude-mem:patterns:react"], "writes": ["github:branch","github:commits","github:pr"] },
+    "devops-agent": { "type": "DevOps Automator", "repos": ["all:.github/workflows"], "reads": ["github:workflows","domiatek-infra:workflows"], "writes": ["github:workflows","github:branch","github:pr"] },
+    "qa-agent": { "type": "Code Reviewer", "reads": ["github:pr_diff","github:issue:acceptance_criteria"], "writes": ["github:pr_review"] },
+    "learning-agent": { "type": "Analytics Reporter", "reads": ["github:merged_prs","github:closed_issues","ruflo:sprint_state"], "writes": ["claude-mem:decisions","claude-mem:errors","claude-mem:velocities","roadmap.json:weights"] }
+  },
+  "memory_rules": {
+    "ruflo": { "ttl": "sprint", "namespaces": ["operational","patterns"], "stores": ["active_tasks","sprint_state","agent_registry","pr_queue"] },
+    "claude_mem": { "ttl": "permanent", "stores": ["decisions","errors","patterns","velocities","tech_debt","agent_performance"] },
+    "deduplication": "Si el dato deja de ser relevante al cerrar el sprint → Ruflo. Si sigue siendo útil en 6 meses → Claude-mem. NUNCA ambos."
+  },
+  "branching_strategy": { "main": "producción protegida", "develop": "integración continua — target de PRs", "agent_branch": "agent/{issue}-{slug}", "hotfix_branch": "hotfix/{issue}-{slug}" },
+  "naming_conventions": { "branches": "agent/42-ai-agenda-daily-view", "commits": "feat(scope): description (#{issue})", "prs": "[agent] feat: title (#{issue})", "agent_issues": "[agent] feat: title" }
+}

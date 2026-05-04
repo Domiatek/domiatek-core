@@ -1,0 +1,16 @@
+{
+  "id": 1,
+  "start": "2026-05-05",
+  "end": "2026-05-18",
+  "goal": "Scaffolds funcionales en proges-app y web-domiatek + autenticación base en RalloApp + Cloudflare Tunnel para ERP",
+  "status": "planned",
+  "items": ["PA-001", "WD-001", "RA-001", "ERP-001"],
+  "metrics": {
+    "planned": 4,
+    "in_progress": 0,
+    "completed": 0,
+    "rejected": 0,
+    "cycle_time_avg_hours": null
+  },
+  "retrospective": null
+}
