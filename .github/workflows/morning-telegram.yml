@@ -1,4 +1,4 @@
-name: Morning Telegram — Daily Plan
+name: Morning Telegram
 
 on:
   schedule:
@@ -10,54 +10,27 @@ permissions:
   issues: write
 
 jobs:
-  morning-plan:
+  morning:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PROJECT_PAT || github.token }}
+          token: ${{ secrets.PROJECT_PAT }}
 
-      - name: Build plan and send Telegram
+      - name: Send Telegram and schedule item
+        run: python3 scripts/morning_plan.py
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python3 scripts/morning_plan.py
 
       - name: Create daily issue
+        run: python3 scripts/create_daily_issue.py
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_PAT || github.token }}
-        run: |
-          TODAY=$(date +%Y-%m-%d)
-          EXISTING=$(gh issue list --repo Domiatek/domiatek-core \
-            --label daily-plan --state open --json number --jq '.[0].number' 2>/dev/null)
-          if [ -z "$EXISTING" ]; then
-            ITEMS=$(python3 -c "
-import json
-with open('roadmap.json') as f:
-    r = json.load(f)
-items = [i for i in r['items'] if i['status'] in ('queued','scheduled','in_progress')]
-print('- [ ] 0. Nuevo proyecto')
-for i, item in enumerate(items[:5], 1):
-    print(f\"- [ ] {i}. [{item['id']}] {item['title']} ({item['repo']})\")
-")
-            gh issue create \
-              --repo Domiatek/domiatek-core \
-              --title "[daily] $TODAY" \
-              --label "daily-plan" \
-              --body "## Plan del dia -- $TODAY
-
-Comenta tu eleccion antes de las **07:00 AM**. Sin respuesta el agente trabaja en la tarea de mayor prioridad.
-
-$ITEMS
-
-> Para nuevo proyecto comenta: 0: descripcion del proyecto"
-          fi
+          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
 
       - name: Commit roadmap
         run: |
           git config user.name "Morning Router"
           git config user.email "router@domiatek.com"
           git add roadmap.json
-          git diff --staged --quiet || (git commit -m "chore(roadmap): schedule top item $(date +%Y-%m-%d)" && git push)
+          git diff --staged --quiet || git commit -m "chore: schedule top item $(date +%Y-%m-%d)" && git push
