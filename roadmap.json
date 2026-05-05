@@ -2,12 +2,12 @@
   "version": "1.0",
   "schema": "domiatek-roadmap-v1",
   "updated_by": "ceo-agent-gh-actions",
-  "updated_at": "2026-05-05T00:00:00Z",
+  "updated_at": "2026-05-05T02:59:45.764Z",
   "current_sprint": {
     "id": 1,
     "start": "2026-05-05",
     "end": "2026-05-18",
-    "goal": "Scaffolds funcionales en proges-app y web-domiatek + autenticación base en RalloApp + Cloudflare Tunnel para ERP"
+    "goal": "Proges-App completa: scaffold + clientes + vehículos + órdenes de trabajo + facturación + dashboard"
   },
   "sprints_completed": 0,
   "items": [
@@ -17,14 +17,84 @@
       "repo": "Domiatek/proges-app",
       "issue": 2,
       "title": "Flutter scaffold con arquitectura feature-first y CI/CD para APK",
-      "epic": "Scaffold e infraestructura",
+      "epic": "Infraestructura",
       "agent_type": "mobile-dev",
       "score": 92,
       "priority": 1,
       "status": "in_progress",
       "assigned_agent": "domiatek-coder",
       "pr_url": "https://github.com/Domiatek/proges-app/pull/6",
-      "rationale": "Blocking: nada puede implementarse sin el scaffold base"
+      "rationale": "Base bloqueante"
+    },
+    {
+      "id": "PA-002",
+      "project": "proges-app",
+      "repo": "Domiatek/proges-app",
+      "issue": 3,
+      "title": "Módulo de clientes — CRUD completo con ficha e historial",
+      "epic": "Módulo Clientes",
+      "agent_type": "mobile-dev",
+      "score": 88,
+      "priority": 2,
+      "status": "queued",
+      "assigned_agent": null,
+      "rationale": "Primera feature funcional — depende de PA-001"
+    },
+    {
+      "id": "PA-003",
+      "project": "proges-app",
+      "repo": "Domiatek/proges-app",
+      "issue": null,
+      "title": "Módulo de vehículos — ficha con matrícula, marca, modelo e historial de trabajos",
+      "epic": "Módulo Vehículos",
+      "agent_type": "mobile-dev",
+      "score": 86,
+      "priority": 3,
+      "status": "queued",
+      "assigned_agent": null,
+      "rationale": "Core del taller — vinculado a clientes"
+    },
+    {
+      "id": "PA-004",
+      "project": "proges-app",
+      "repo": "Domiatek/proges-app",
+      "issue": null,
+      "title": "Módulo de órdenes de trabajo — apertura, seguimiento y cierre con firma digital",
+      "epic": "Módulo Órdenes",
+      "agent_type": "mobile-dev",
+      "score": 85,
+      "priority": 4,
+      "status": "queued",
+      "assigned_agent": null,
+      "rationale": "Flujo principal del taller"
+    },
+    {
+      "id": "PA-005",
+      "project": "proges-app",
+      "repo": "Domiatek/proges-app",
+      "issue": null,
+      "title": "Módulo de presupuestos y facturas — generación y exportación PDF",
+      "epic": "Módulo Facturación",
+      "agent_type": "mobile-dev",
+      "score": 83,
+      "priority": 5,
+      "status": "queued",
+      "assigned_agent": null,
+      "rationale": "Cierra el ciclo de trabajo completo"
+    },
+    {
+      "id": "PA-006",
+      "project": "proges-app",
+      "repo": "Domiatek/proges-app",
+      "issue": null,
+      "title": "Dashboard — KPIs del taller, trabajos del día y alertas de vehículos pendientes",
+      "epic": "Reporting",
+      "agent_type": "mobile-dev",
+      "score": 78,
+      "priority": 6,
+      "status": "queued",
+      "assigned_agent": null,
+      "rationale": "Vista principal de gestión"
     },
     {
       "id": "WD-001",
@@ -35,10 +105,10 @@
       "epic": "Scaffold e infraestructura",
       "agent_type": "frontend-dev",
       "score": 88,
-      "priority": 2,
-      "status": "queued",
+      "priority": 7,
+      "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Blocking: define el stack antes de cualquier feature de web"
+      "rationale": "En espera hasta completar proges-app"
     },
     {
       "id": "RA-001",
@@ -49,10 +119,10 @@
       "epic": "Autenticación y onboarding",
       "agent_type": "mobile-dev",
       "score": 84,
-      "priority": 3,
-      "status": "queued",
+      "priority": 8,
+      "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Core blocking: todas las features requieren usuario autenticado"
+      "rationale": "En espera hasta completar proges-app"
     },
     {
       "id": "ERP-001",
@@ -63,24 +133,10 @@
       "epic": "Infraestructura y acceso",
       "agent_type": "devops",
       "score": 78,
-      "priority": 4,
-      "status": "queued",
-      "assigned_agent": null,
-      "rationale": "Infra: permite acceso remoto al ERP local"
-    },
-    {
-      "id": "PA-002",
-      "project": "proges-app",
-      "repo": "Domiatek/proges-app",
-      "issue": 3,
-      "title": "Módulo de clientes — CRUD completo con ficha e historial",
-      "epic": "Módulo Clientes",
-      "agent_type": "mobile-dev",
-      "score": 76,
-      "priority": 5,
+      "priority": 9,
       "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Depende de PA-001. Primera feature funcional de proges-app"
+      "rationale": "En espera hasta completar proges-app"
     },
     {
       "id": "WD-002",
@@ -91,10 +147,10 @@
       "epic": "Web corporativa",
       "agent_type": "frontend-dev",
       "score": 74,
-      "priority": 6,
+      "priority": 10,
       "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Depende de WD-001. Visibilidad pública de Domiatek"
+      "rationale": "Depende de WD-001"
     },
     {
       "id": "RA-002",
@@ -105,10 +161,10 @@
       "epic": "Core product differentiator",
       "agent_type": "mobile-dev",
       "score": 90,
-      "priority": 7,
+      "priority": 11,
       "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Alta prioridad de negocio pero depende de RA-001 (auth)"
+      "rationale": "Depende de RA-001"
     },
     {
       "id": "ERP-002",
@@ -119,10 +175,10 @@
       "epic": "Facturación",
       "agent_type": "backend-dev",
       "score": 82,
-      "priority": 8,
+      "priority": 12,
       "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Core del ERP. Alta complejidad, sprint 2"
+      "rationale": "Sprint 2+"
     },
     {
       "id": "AE-001",
@@ -133,10 +189,10 @@
       "epic": "OCR y automatización",
       "agent_type": "backend-dev",
       "score": 80,
-      "priority": 9,
+      "priority": 13,
       "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Feature estrella de app-energia. Sprint 2"
+      "rationale": "Sprint 2+"
     },
     {
       "id": "ERP-003",
@@ -147,10 +203,10 @@
       "epic": "Business Intelligence",
       "agent_type": "frontend-dev",
       "score": 77,
-      "priority": 10,
+      "priority": 14,
       "status": "backlog",
       "assigned_agent": null,
-      "rationale": "Valor operativo alto. Depende de datos de facturación"
+      "rationale": "Depende de datos de facturación"
     }
   ],
   "weights": {
@@ -168,6 +224,6 @@
       "app-energia",
       "web-domiatek"
     ],
-    "last_analysis": "2026-05-05T00:00:00Z"
+    "last_analysis": "2026-05-05T02:59:45.765Z"
   }
 }
