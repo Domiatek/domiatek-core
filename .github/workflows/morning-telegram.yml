@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PROJECT_PAT }}
 
       - name: Send Telegram and schedule item
         run: python3 scripts/morning_plan.py
@@ -26,7 +24,7 @@ jobs:
       - name: Create daily issue
         run: python3 scripts/create_daily_issue.py
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Commit roadmap
         run: |
