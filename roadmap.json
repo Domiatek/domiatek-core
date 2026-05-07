@@ -2,7 +2,7 @@
   "version": "1.0",
   "schema": "domiatek-roadmap-v1",
   "updated_by": "ceo-agent-gh-actions",
-  "updated_at": "2026-05-06T11:24:32.632630Z",
+  "updated_at": "2026-05-07T11:27:06.306399Z",
   "current_sprint": {
     "id": 1,
     "start": "2026-05-05",
@@ -64,7 +64,7 @@
       "agent_type": "mobile-dev",
       "score": 85,
       "priority": 4,
-      "status": "queued",
+      "status": "scheduled",
       "assigned_agent": null,
       "rationale": "Flujo principal del taller"
     },
