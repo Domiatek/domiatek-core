@@ -36,8 +36,10 @@
       "agent_type": "mobile-dev",
       "score": 88,
       "priority": 2,
-      "status": "scheduled",
-      "assigned_agent": null,
+      "status": "in_progress",
+      "assigned_agent": "domiatek-coder",
+      "pr_url": "https://github.com/Domiatek/domiatek-core/pull/4",
+      "staging_note": "Implementación en pending-implementations/PA-002 — requiere PROJECT_PAT para push directo a proges-app",
       "rationale": "Primera feature funcional — depende de PA-001"
     },
     {
