@@ -2,7 +2,7 @@
   "version": "1.0",
   "schema": "domiatek-roadmap-v1",
   "updated_by": "ceo-agent-gh-actions",
-  "updated_at": "2026-05-08T08:59:33.294013Z",
+  "updated_at": "2026-05-09T09:02:46.008458Z",
   "current_sprint": {
     "id": 1,
     "start": "2026-05-05",
@@ -92,7 +92,7 @@
       "agent_type": "mobile-dev",
       "score": 78,
       "priority": 6,
-      "status": "queued",
+      "status": "scheduled",
       "assigned_agent": null,
       "rationale": "Vista principal de gestión"
     },
